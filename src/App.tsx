@@ -3,8 +3,6 @@ import reactLogo from './assets/react.svg'
 import './App.css'
 import {TelegramWebApps} from "telegram-webapps-types";
 
-
-
 type TGWindow = Window & typeof globalThis & {Telegram: {
     WebApp: TelegramWebApps.WebApp;
     WebAppUser: TelegramWebApps.WebAppUser

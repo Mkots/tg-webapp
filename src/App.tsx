@@ -22,7 +22,7 @@ function App() {
     <>
       <div>
         <a href="https://vitejs.dev" target="_blank">
-          <img src={tg.WebAppUser.photo_url} className="logo" alt="Vite logo" />
+          <img src={tg.WebApp.initDataUnsafe.user?.first_name} className="logo" alt="Vite logo" />
         </a>
         <a href="https://react.dev" target="_blank">
           <img src={reactLogo} className="logo react" alt="React logo" />

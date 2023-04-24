@@ -4,10 +4,6 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "typeRoots": [
-      "./node_modules/@types",
-      "./node_modules/telegram-webapps-types"
-    ],
 
     /* Bundler mode */
     "moduleResolution": "bundler",

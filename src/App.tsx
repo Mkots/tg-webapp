@@ -2,12 +2,10 @@ import {useEffect, useState} from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
 import {TelegramWebApps} from "telegram-webapps-types";
-import WebApp = TelegramWebApps.WebApp;
-import WebAppUser = TelegramWebApps.WebAppUser;
 
 type TGWindow = Window & typeof globalThis & {Telegram: {
-    WebApp: WebApp;
-    WebAppUser: WebAppUser
+    WebApp: TelegramWebApps.WebApp;
+    WebAppUser: TelegramWebApps.WebAppUser
     }
 }
 

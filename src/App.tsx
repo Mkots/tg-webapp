@@ -1,47 +1,63 @@
-import {useEffect, useState} from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import {useEffect} from 'react'
+import {useQuery} from '@tanstack/react-query';
 import {TelegramWebApps} from "telegram-webapps-types";
+import {Button, Card} from "react-bootstrap";
 
-type TGWindow = Window & typeof globalThis & {Telegram: {
-    WebApp: TelegramWebApps.WebApp;
-    WebAppUser: TelegramWebApps.WebAppUser
+import './App.scss'
+
+type TGWindow = Window & typeof globalThis & {
+    Telegram: {
+        WebApp: TelegramWebApps.WebApp;
     }
 }
 
 const tg = (window as TGWindow).Telegram;
+
+function fetchData() {
+    return fetch('https://dummyjson.com/quotes/random')
+        .then(res => res.json());
+}
+
 function App() {
-  const [count, setCount] = useState(0)
+    const {isLoading, data, error} = useQuery<{id: string; quote: string; author: string}, {message: string}>({queryKey: ['quotes'], queryFn: fetchData});
 
     useEffect(() => {
         tg.WebApp.ready();
     }, []);
-    
+    const user = tg.WebApp.initDataUnsafe.user;
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={tg.WebApp.initDataUnsafe.user?.first_name} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    if (error) {
+        return <div>Error: {error.message}</div>;
+    }
+    return (
+        <Card style={{
+            backgroundColor: "var(--tg-theme-bg-color)",
+            color: "var(--tg-theme-text-color)"
+        }}>
+            <Card.Img variant="top" src="https://cataas.com/cat"/>
+            <Card.Body>
+                <Card.Title>{user?.first_name} {user?.last_name}</Card.Title>
+                {data && (
+                    <Card.Text key={data.id}>
+                        {data.quote} - {data.author}
+                    </Card.Text>
+                )}
+                <Button
+                    variant="primary"
+                    style={{
+                        backgroundColor: "var(--tg-theme-button-color)",
+                        color: "var(--tg-theme-button-text-color)",
+                    }}
+                    onClick={() => {
+                        tg.WebApp.sendData({data: "♥"})
+                    }}
+                >Send Like</Button>
+            </Card.Body>
+        </Card>
+    )
 }
 
 export default App

@@ -52,7 +52,7 @@ function App() {
                         color: "var(--tg-theme-button-text-color)",
                     }}
                     onClick={() => {
-                        tg.WebApp.sendData({data: "♥"})
+                        tg.WebApp.sendData( "♥")
                     }}
                 >Send Like</Button>
             </Card.Body>

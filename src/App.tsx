@@ -99,6 +99,7 @@ function App() {
                     style={{
                         backgroundColor: "var(--tg-theme-button-color)",
                         color: "var(--tg-theme-button-text-color)",
+
                     }}
                     onClick={handleDislike}
                 >💔: {dislikesCount}</Button>

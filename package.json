@@ -10,7 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^4.29.5",
+    "bootstrap": "^5.2.3",
     "react": "^18.2.0",
+    "react-bootstrap": "^2.7.4",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
@@ -22,6 +25,7 @@
     "eslint": "^8.38.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.3.4",
+    "sass": "^1.62.0",
     "telegram-webapps-types": "^1.0.5",
     "typescript": "^5.0.2",
     "vite": "^4.3.0"

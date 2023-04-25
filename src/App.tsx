@@ -1,7 +1,7 @@
-import {useEffect} from 'react'
+import {useEffect, useState} from 'react'
 import {useQuery} from '@tanstack/react-query';
 import {TelegramWebApps} from "telegram-webapps-types";
-import {Button, Card} from "react-bootstrap";
+import {Button, Card, Placeholder, Spinner} from "react-bootstrap";
 
 import './App.scss'
 
@@ -19,15 +19,25 @@ function fetchData() {
 }
 
 function App() {
-    const {isLoading, data, error} = useQuery<{id: string; quote: string; author: string}, {message: string}>({queryKey: ['quotes'], queryFn: fetchData});
+    const [likesCount, setLikesCount] = useState(0);
+    const [dislikesCount, setDislikesCount] = useState(0);
+    const [isImageLoading, setIsImageLoading] = useState(true);
+
+    function handleLike() {
+        setLikesCount(likesCount + 1);
+        setIsImageLoading(true);
+    }
+    function handleDislike() {
+        setDislikesCount(dislikesCount + 1);
+        setIsImageLoading(true);
+    }
+
+    const {isLoading, data, error} = useQuery<{id: string; quote: string; author: string}, {message: string}>({queryKey: ['quotes', likesCount, dislikesCount], queryFn: fetchData});
 
     useEffect(() => {
         tg.WebApp.ready();
     }, []);
     const user = tg.WebApp.initDataUnsafe.user;
-    if (isLoading) {
-        return <div>Loading...</div>;
-    }
 
     if (error) {
         return <div>Error: {error.message}</div>;
@@ -36,25 +46,63 @@ function App() {
         <Card style={{
             backgroundColor: "var(--tg-theme-bg-color)",
             color: "var(--tg-theme-text-color)"
-        }}>
-            <Card.Img variant="top" src="https://cataas.com/cat"/>
+        }} key={`card_${likesCount}_${dislikesCount}`}>
+            <div
+                className={isImageLoading ? "d-block" : "d-none"}
+                style={{
+                height: "50vh",
+                textAlign: "center",
+                paddingTop: "10%"
+            }}>
+                <Spinner animation="grow" style={{
+                    width: "15rem",
+                    height: "15rem",
+                    backgroundColor: "var(--tg-theme-secondary-bg-color)"
+                }}/>
+            </div>
+            <Card.Img
+                variant="top"
+                className={isImageLoading ? "d-none" : "d-block"}
+                src={`https://cataas.com/cat?${likesCount}${dislikesCount}`}
+                style={{
+                    maxHeight: "50vh"
+            }}
+                onLoad={() => setIsImageLoading(false)}
+            />
             <Card.Body>
-                <Card.Title>{user?.first_name} {user?.last_name}</Card.Title>
+                <Card.Title>Have a good day, {user?.first_name} {user?.last_name}!</Card.Title>
+                {isLoading && (
+                    <Placeholder as={Card.Text} animation="glow">
+                        <Placeholder xs={7} /> <Placeholder xs={4} /> <Placeholder xs={4} />{' '}
+                        <Placeholder xs={6} /> <Placeholder xs={8} />
+                    </Placeholder>
+                )}
                 {data && (
                     <Card.Text key={data.id}>
                         {data.quote} - {data.author}
                     </Card.Text>
                 )}
+                <div style={{
+                    display: "flex",
+                    justifyContent: "space-between"
+                }}>
                 <Button
                     variant="primary"
                     style={{
                         backgroundColor: "var(--tg-theme-button-color)",
                         color: "var(--tg-theme-button-text-color)",
                     }}
-                    onClick={() => {
-                        tg.WebApp.sendData({data: "♥"})
+                    onClick={handleLike}
+                >❤: {likesCount}️</Button>
+                <Button
+                    variant="primary"
+                    style={{
+                        backgroundColor: "var(--tg-theme-button-color)",
+                        color: "var(--tg-theme-button-text-color)",
                     }}
-                >Send Like</Button>
+                    onClick={handleDislike}
+                >💔: {dislikesCount}</Button>
+                </div>
             </Card.Body>
         </Card>
     )

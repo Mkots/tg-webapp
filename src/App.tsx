@@ -54,7 +54,6 @@ function App() {
                     onClick={() => {
                         tg.WebApp.sendData({data: "♥"})
                     }}
-
                 >Send Like</Button>
             </Card.Body>
         </Card>

@@ -18,6 +18,11 @@ function fetchData() {
         .then(res => res.json());
 }
 
+function fetchImage() {
+    return fetch('https://api.thecatapi.com/v1/images/search?size=full')
+        .then(res => res.json());
+}
+
 function App() {
     const [likesCount, setLikesCount] = useState(0);
     const [dislikesCount, setDislikesCount] = useState(0);
@@ -31,7 +36,7 @@ function App() {
         setDislikesCount(dislikesCount + 1);
         setIsImageLoading(true);
     }
-
+    const {isLoading: isImgSrcLoading, data: imgSrc, error: imgSrcError} = useQuery<Array<{id: string; url: string}>, {message: string}>({queryKey: ['imgSrc', likesCount, dislikesCount], queryFn: fetchImage});
     const {isLoading, data, error} = useQuery<{id: string; quote: string; author: string}, {message: string}>({queryKey: ['quotes', likesCount, dislikesCount], queryFn: fetchData});
 
     useEffect(() => {
@@ -39,8 +44,8 @@ function App() {
     }, []);
     const user = tg.WebApp.initDataUnsafe.user;
 
-    if (error) {
-        return <div>Error: {error.message}</div>;
+    if (error || imgSrcError) {
+        return <div>Error: {error?.message || imgSrcError?.message}</div>;
     }
     return (
         <Card style={{
@@ -48,7 +53,7 @@ function App() {
             color: "var(--tg-theme-text-color)"
         }} key={`card_${likesCount}_${dislikesCount}`}>
             <div
-                className={isImageLoading ? "d-block" : "d-none"}
+                className={isImageLoading || isImgSrcLoading ? "d-block" : "d-none"}
                 style={{
                 height: "50vh",
                 textAlign: "center",
@@ -62,8 +67,8 @@ function App() {
             </div>
             <Card.Img
                 variant="top"
-                className={isImageLoading ? "d-none" : "d-block"}
-                src={`https://cataas.com/cat?${likesCount}${dislikesCount}`}
+                className={isImageLoading || isImgSrcLoading ? "d-none" : "d-block"}
+                src={imgSrc?.[0]?.url}
                 style={{
                     maxHeight: "50vh"
             }}

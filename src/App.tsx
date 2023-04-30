@@ -1,27 +1,16 @@
 import {useEffect, useState} from 'react'
 import {useQuery} from '@tanstack/react-query';
-import {TelegramWebApps} from "telegram-webapps-types";
-import {Button, Card, Placeholder, Spinner} from "react-bootstrap";
+import {Card} from "react-bootstrap";
 
+import {ErrorResponse, ImageResponse, QuoteResponse, TGWindow} from "./api/types";
+import {fetchImage, fetchQuote} from "./api";
+
+import CatImage from "./components/CatImage";
+import Quote from "./components/Quote";
+import ActionButtons from "./components/ActionButtons";
 import './App.scss'
 
-type TGWindow = Window & typeof globalThis & {
-    Telegram: {
-        WebApp: TelegramWebApps.WebApp;
-    }
-}
-
 const tg = (window as TGWindow).Telegram;
-
-function fetchData() {
-    return fetch('https://dummyjson.com/quotes/random')
-        .then(res => res.json());
-}
-
-function fetchImage() {
-    return fetch('https://api.thecatapi.com/v1/images/search?size=full')
-        .then(res => res.json());
-}
 
 function App() {
     const [likesCount, setLikesCount] = useState(0);
@@ -32,12 +21,20 @@ function App() {
         setLikesCount(likesCount + 1);
         setIsImageLoading(true);
     }
+
     function handleDislike() {
         setDislikesCount(dislikesCount + 1);
         setIsImageLoading(true);
     }
-    const {isLoading: isImgSrcLoading, data: imgSrc, error: imgSrcError} = useQuery<Array<{id: string; url: string}>, {message: string}>({queryKey: ['imgSrc', likesCount, dislikesCount], queryFn: fetchImage});
-    const {isLoading, data, error} = useQuery<{id: string; quote: string; author: string}, {message: string}>({queryKey: ['quotes', likesCount, dislikesCount], queryFn: fetchData});
+
+    const {isLoading: isImgSrcLoading, data: imgSrc, error: imgSrcError} = useQuery<ImageResponse, ErrorResponse>({
+        queryKey: ['imgSrc', likesCount, dislikesCount],
+        queryFn: fetchImage
+    });
+    const {isLoading, data, error} = useQuery<QuoteResponse, ErrorResponse>({
+        queryKey: ['quotes', likesCount, dislikesCount],
+        queryFn: fetchQuote
+    });
 
     useEffect(() => {
         tg.WebApp.ready();
@@ -52,63 +49,23 @@ function App() {
             backgroundColor: "var(--tg-theme-bg-color)",
             color: "var(--tg-theme-text-color)"
         }} key={`card_${likesCount}_${dislikesCount}`}>
-            <div
-                className={isImageLoading || isImgSrcLoading ? "d-block" : "d-none"}
-                style={{
-                height: "50vh",
-                textAlign: "center",
-                paddingTop: "10%"
-            }}>
-                <Spinner animation="grow" style={{
-                    width: "15rem",
-                    height: "15rem",
-                    backgroundColor: "var(--tg-theme-secondary-bg-color)"
-                }}/>
-            </div>
-            <Card.Img
-                variant="top"
-                className={isImageLoading || isImgSrcLoading ? "d-none" : "d-block"}
-                src={imgSrc?.[0]?.url}
-                style={{
-                    maxHeight: "50vh"
-            }}
-                onLoad={() => setIsImageLoading(false)}
+            <CatImage
+                isLoading={isImageLoading || isImgSrcLoading}
+                imgSrc={imgSrc?.[0]?.url}
+                setLoadedState={setIsImageLoading}
             />
             <Card.Body>
                 <Card.Title>Have a good day, {user?.first_name} {user?.last_name}!</Card.Title>
-                {isLoading && (
-                    <Placeholder as={Card.Text} animation="glow">
-                        <Placeholder xs={7} /> <Placeholder xs={4} /> <Placeholder xs={4} />{' '}
-                        <Placeholder xs={6} /> <Placeholder xs={8} />
-                    </Placeholder>
-                )}
-                {data && (
-                    <Card.Text key={data.id}>
-                        {data.quote} - {data.author}
-                    </Card.Text>
-                )}
-                <div style={{
-                    display: "flex",
-                    justifyContent: "space-between"
-                }}>
-                <Button
-                    variant="primary"
-                    style={{
-                        backgroundColor: "var(--tg-theme-button-color)",
-                        color: "var(--tg-theme-button-text-color)",
-                    }}
-                    onClick={handleLike}
-                >❤: {likesCount}️</Button>
-                <Button
-                    variant="primary"
-                    style={{
-                        backgroundColor: "var(--tg-theme-button-color)",
-                        color: "var(--tg-theme-button-text-color)",
-
-                    }}
-                    onClick={handleDislike}
-                >💔: {dislikesCount}</Button>
-                </div>
+                <Quote
+                    isLoading={isLoading}
+                    data={data}
+                />
+                <ActionButtons
+                likesCount={likesCount}
+                dislikesCount={dislikesCount}
+                handleLike={handleLike}
+                handleDislike={handleDislike}
+                />
             </Card.Body>
         </Card>
     )
